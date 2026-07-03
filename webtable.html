@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดเก็บข้อมูลสัตว์เลี้ยง</title>
+    <title>ระบบฐานข้อมูลและตารางจัดการสัตว์เลี้ยง</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 
@@ -15,7 +15,7 @@
         }
 
         body {
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
             color: #1e293b;
             padding: 40px 20px;
             display: flex;
@@ -49,12 +49,41 @@
             gap: 24px;
         }
 
+        /* ส่วนแสดงสถิติแบบย่อ (Dashboard Mini Cards) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
         /* ฟอร์มกรอกข้อมูล */
         .form-card {
             background: #ffffff;
             padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
         }
 
@@ -124,7 +153,7 @@
         .table-card {
             background: #ffffff;
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
             overflow: hidden;
         }
@@ -141,7 +170,7 @@
         }
 
         th {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             color: #475569;
             padding: 16px;
             font-weight: 600;
@@ -159,7 +188,7 @@
             background-color: #f8fafc;
         }
 
-        /* Badge สถานะประเภทสัตว์ */
+        /* Badge จำแนกประเภทสัตว์ */
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -192,7 +221,7 @@
         .empty-row {
             text-align: center;
             color: #94a3b8;
-            padding: 32px;
+            padding: 40px;
             font-style: italic;
         }
     </style>
@@ -200,37 +229,56 @@
 <body>
 
     <header>
-        <h1>ระบบฐานข้อมูลสัตว์เลี้ยงแสนรัก 📊</h1>
-        <p>บันทึก จัดการ และตรวจสอบรายชื่อสัตว์เลี้ยงของคุณในรูปแบบตารางสถิติ</p>
+        <h1>ระบบจัดเก็บข้อมูลสัตว์เลี้ยง 📊</h1>
+        <p>บันทึกและจัดการข้อมูลรายชื่อสัตว์เลี้ยงอย่างเป็นระบบในรูปแบบตารางข้อมูลสถิติ</p>
     </header>
 
     <div class="container">
         
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+                <span class="stat-label">🐶 สุนัขทั้งหมด</span>
+                <span class="stat-value" id="countDog">1</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #f97316;">
+                <span class="stat-label">🐱 แมวทั้งหมด</span>
+                <span class="stat-value" id="countCat">1</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #ec4899;">
+                <span class="stat-label">🐷 หมูทั้งหมด</span>
+                <span class="stat-value" id="countPig">1</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #10b981; background-color: #f0fdf4;">
+                <span class="stat-label">รวมทั้งหมด</span>
+                <span class="stat-value" id="countTotal">3</span>
+            </div>
+        </div>
+        
         <div class="form-card">
-            <div class="form-title">➕ เพิ่มรายชื่อสัตว์เลี้ยงใหม่</div>
-            <form id="petForm" onsubmit="addData(event)">
+            <div class="form-title">📝 กรอกรายละเอียดสัตว์เลี้ยงใหม่</div>
+            <form id="dataForm" onsubmit="insertRowData(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="petName">ชื่อสัตว์เลี้ยง</label>
-                        <input type="text" id="petName" placeholder="เช่น บราวนี่, ถุงเงิน" required>
+                        <label for="inputName">ชื่อสัตว์เลี้ยง</label>
+                        <input type="text" id="inputName" placeholder="เช่น ถุงเงิน, บราวนี่" required>
                     </div>
                     <div class="form-group">
-                        <label for="petType">ประเภท</label>
-                        <select id="petType" required>
+                        <label for="inputType">ประเภทสัตว์</label>
+                        <select id="inputType" required>
                             <option value="หมา">สุนัข (Dog)</option>
                             <option value="แมว">แมว (Cat)</option>
                             <option value="หมู">หมู (Pig)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="petAge">อายุ (ปี)</label>
-                        <input type="number" id="petAge" min="0" max="50" placeholder="เช่น 2" required>
+                        <label for="inputAge">อายุ (ปี)</label>
+                        <input type="number" id="inputAge" min="0" max="99" placeholder="ระบุตัวเลขอายุ" required>
                     </div>
                     <div class="form-group">
-                        <label for="petOwner">ชื่อเจ้าของ</label>
-                        <input type="text" id="petOwner" placeholder="ชื่อผู้ดูแล" required>
+                        <label for="inputOwner">ชื่อเจ้าของ</label>
+                        <input type="text" id="inputOwner" placeholder="ชื่อ-นามสกุล ผู้ดูแล" required>
                     </div>
-                    <button type="submit" class="btn-submit">บันทึกข้อมูล</button>
+                    <button type="submit" class="btn-submit">➕ บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
@@ -240,30 +288,38 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ลำดับ</th>
+                            <th style="width: 80px; text-align: center;">ลำดับ</th>
                             <th>ชื่อสัตว์เลี้ยง</th>
                             <th>ประเภท</th>
                             <th>อายุ (ปี)</th>
                             <th>ชื่อเจ้าของ</th>
-                            <th style="width: 100px; text-align: center;">จัดการ</th>
+                            <th style="width: 100px; text-align: center;">การจัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr id="row-1">
-                            <td>1</td>
+                        <tr class="data-item" data-type="หมา">
+                            <td style="text-align: center;">1</td>
                             <td style="font-weight: 500;">ด็อบบี้</td>
                             <td><span class="badge badge-dog">หมา</span></td>
                             <td>3</td>
                             <td>สมชาย ใจดี</td>
-                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('row-1')">ลบ</button></td>
+                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRowData(this)">ลบ</button></td>
                         </tr>
-                        <tr id="row-2">
-                            <td>2</td>
+                        <tr class="data-item" data-type="แมว">
+                            <td style="text-align: center;">2</td>
                             <td style="font-weight: 500;">ส้มหยุด</td>
                             <td><span class="badge badge-cat">แมว</span></td>
                             <td>1</td>
-                            <td>มณี รักสัตว์</td>
-                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('row-2')">ลบ</button></td>
+                            <td>มณี นามสมมุติ</td>
+                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRowData(this)">ลบ</button></td>
+                        </tr>
+                        <tr class="data-item" data-type="หมู">
+                            <td style="text-align: center;">3</td>
+                            <td style="font-weight: 500;">เบคอน</td>
+                            <td><span class="badge badge-pig">หมู</span></td>
+                            <td>2</td>
+                            <td>กิตติพงษ์ รักดี</td>
+                            <td style="text-align: center;"><button class="btn-delete" onclick="deleteRowData(this)">ลบ</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -273,80 +329,91 @@
     </div>
 
     <script>
-        // ตัวนับจำนวนแถวเพื่อใช้เป็น ID และลำดับข้อมูล
-        let rowCount = 2;
+        // ฟังก์ชันเมื่อมีการกดปุ่ม "บันทึกข้อมูล"
+        function insertRowData(event) {
+            event.preventDefault(); // ป้องกันเบราว์เซอร์รีเฟรชหน้าเว็บ
 
-        // ฟังก์ชันสำหรับเพิ่มข้อมูลลงตาราง
-        function addData(event) {
-            event.preventDefault(); // ป้องกันหน้าเว็บรีเฟรชเมื่อกดส่งฟอร์ม
+            // ดึงค่าอินพุตจากฟอร์ม
+            const name = document.getElementById('inputName').value;
+            const type = document.getElementById('inputType').value;
+            const age = document.getElementById('inputAge').value;
+            const owner = document.getElementById('inputOwner').value;
 
-            // ดึงค่าจากกล่องกรอกข้อมูล
-            const name = document.getElementById('petName').value;
-            const type = document.getElementById('petType').value;
-            const age = document.getElementById('petAge').value;
-            const owner = document.getElementById('petOwner').value;
-
-            rowCount++;
-            const rowId = `row-${rowCount}`;
-
-            // เลือกสไตล์ของ Badge ตามประเภทสัตว์
+            // เลือกประเภทคลาสสไตล์ Badge
             let badgeClass = 'badge-dog';
             if (type === 'แมว') badgeClass = 'badge-cat';
             if (type === 'หมู') badgeClass = 'badge-pig';
 
             const tableBody = document.getElementById('tableBody');
 
-            // ตรวจสอบว่าถ้าเคยแสดงข้อความ "ไม่มีข้อมูล" ให้ลบออกก่อน
-            const emptyMessage = document.getElementById('emptyMessage');
-            if (emptyMessage) {
-                emptyMessage.remove();
-            }
+            // ตรวจสอบและลบแถว "ไม่มีข้อมูล" ออกไปก่อน (หากมี)
+            const emptyRow = document.getElementById('emptyRow');
+            if (emptyRow) emptyRow.remove();
 
-            // สร้างแถวตาราง (Row) ใหม่
+            // สร้าง Element แถวใหม่ของตาราง <tr>
             const newRow = document.createElement('tr');
-            newRow.id = rowId;
+            newRow.className = 'data-item';
+            newRow.setAttribute('data-type', type);
             newRow.innerHTML = `
-                <td>${tableBody.children.length + 1}</td>
+                <td style="text-align: center;"></td>
                 <td style="font-weight: 500;">${name}</td>
                 <td><span class="badge ${badgeClass}">${type}</span></td>
                 <td>${age}</td>
                 <td>${owner}</td>
-                <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow('${rowId}')">ลบ</button></td>
+                <td style="text-align: center;"><button class="btn-delete" onclick="deleteRowData(this)">ลบ</button></td>
             `;
 
-            // เพิ่มแถวใหม่ลงไปในตาราง
+            // ทำการบันทึกลงไปในตาราง
             tableBody.appendChild(newRow);
 
-            // รีเซ็ตฟอร์มให้ว่างพร้อมกรอกข้อมูลถัดไป
-            document.getElementById('petForm').reset();
-            updateRowNumbers();
+            // รีเซ็ตค่าภายในกล่องฟอร์มกรอกข้อมูลให้ว่างเปล่า
+            document.getElementById('dataForm').reset();
+
+            // รันระบบคำนวณหมายเลขแถวใหม่และสรุปผลตัวเลขสถิติ
+            refreshTableSystem();
         }
 
-        // ฟังก์ชันลบข้อมูลแถวที่เลือก
-        function deleteRow(rowId) {
-            const row = document.getElementById(rowId);
-            if (row) {
-                row.remove();
-                updateRowNumbers(); // อัปเดตเลขลำดับข้อที่เหลือใหม่
-            }
-        }
-
-        // ฟังก์ชันอัปเดตเลขลำดับ (1, 2, 3...) เรียงใหม่ให้ถูกต้องเมื่อมีการเพิ่มหรือลบข้อมูล
-        function updateRowNumbers() {
-            const tableBody = document.getElementById('tableBody');
-            const rows = tableBody.getElementsByTagName('tr');
+        // ฟังก์ชันเมื่อคลิกปุ่ม "ลบ" ข้อมูลแถวนั้นๆ
+        function deleteRowData(buttonElement) {
+            // ไปที่ Element พ่อที่เป็นแท็ก <tr> ของปุ่มนั้นแล้วสั่งทำลายทิ้ง
+            const targetRow = buttonElement.closest('tr');
+            targetRow.remove();
             
+            // รันระบบรีเซ็ตเลขและสถิติใหม่
+            refreshTableSystem();
+        }
+
+        // ระบบรีเซ็ตตัวเลขลำดับ และนับสถิติจำนวนสัตว์แยกประเภทแบบอัตโนมัติ
+        function refreshTableSystem() {
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.getElementsByClassName('data-item');
+            
+            // 1. กรณีลบจนตารางว่างเปล่า
             if (rows.length === 0) {
-                tableBody.innerHTML = `<tr id="emptyMessage"><td colspan="6" class="empty-row">❌ ยังไม่มีข้อมูลสัตว์เลี้ยงในระบบคลังพัสดุ</td></tr>`;
+                tableBody.innerHTML = `<tr id="emptyRow"><td colspan="6" class="empty-row">❌ ไม่มีรายชื่อข้อมูลสัตว์เลี้ยงในตารางขณะนี้</td></tr>`;
+                document.getElementById('countDog').innerText = '0';
+                document.getElementById('countCat').innerText = '0';
+                document.getElementById('countPig').innerText = '0';
+                document.getElementById('countTotal').innerText = '0';
                 return;
             }
 
+            // ตัวแปรเก็บจำนวนนับสถิติแยกตามประเภท
+            let dogs = 0, cats = 0, pigs = 0;
+
+            // 2. ลูปวนเช็คแถวที่เหลือทั้งหมดในตารางเพื่อใส่เลขลำดับใหม่ และนับจำนวนสถิติสรุปผล
             for (let i = 0; i < rows.length; i++) {
-                if (rows[i].id !== 'emptyMessage') {
-                    rows[i].getElementsByTagName('td')[0].innerText = i + 1;
-                }
+                // รันลำดับแถวใหม่ (1, 2, 3...)
+                rows[i].getElementsByTagName('td')[0].innerText = i + 1;
+
+                // นับแยกประเภทตาม Attribute 'data-type'
+                const petType = rows[i].getAttribute('data-type');
+                if (petType === 'หมา') dogs++;
+                if (petType === 'แมว') cats++;
+                if (petType === 'หมู') pigs++;
             }
-        }
-    </script>
-</body>
-</html>
+
+            // ส่งค่ากลับไปแสดงผลบนกล่อง Mini Dashboard ตัวนับด้านบน
+            document.getElementById('countDog').innerText = dogs;
+            document.getElementById('countCat').innerText = cats;
+            document.
